@@ -48,7 +48,7 @@ with st.sidebar:
 @st.cache_resource
 def load_model():
     # 先加载适配器配置
-    adapter_path = r"C:\Users\周强1\Desktop\qwen_finance_model"
+    adapter_path = r"qwen_finance_model"
     config = PeftConfig.from_pretrained(adapter_path)
     
     # 加载基础模型（增加low_cpu_mem_usage参数）
