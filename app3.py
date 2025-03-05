@@ -4,6 +4,13 @@ from peft import PeftModel, PeftConfig
 import streamlit as st
 import webbrowser
 
+# 设置页面配置（必须在第一个命令中调用）
+st.set_page_config(
+    page_title="财智AI - 金融问答助手",
+    page_icon="💬",
+    layout="wide"
+)
+
 # 标题和说明
 st.title("💬 中央财经大学-财智AI")
 st.caption("基于 Qwen2.5-1.5B 微调的金融 FAQ 问答系统")
@@ -133,6 +140,7 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
         # 展示回答
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
+
 # 添加跳转到智能投顾助手的按钮
 if st.button("进入智能投顾助手"):
     st.session_state.page = "smart_advisor"
