@@ -141,13 +141,23 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
+
 # 付费功能的说明和按钮
 st.markdown("---")
 st.markdown("**付费功能**")
-st.markdown("以下是我们的付费功能：")
-st.markdown("- **智能投顾助手**：为您提供专业的投资建议和资产配置方案。")
-st.markdown("- **AI制作PPT**：根据您的需求自动生成高质量的PPT。")
-st.markdown("- **论文查重**：为您提供快速准确的论文查重服务。")
+
+# 使用 HTML 和 CSS 添加边框
+st.markdown("""
+<div style="border: 2px solid #4CAF50; padding: 10px; margin: 10px 0; border-radius: 5px; cursor: pointer;">
+    <p style="margin: 0; font-size: 16px;">**智能投顾助手**：为您提供专业的投资建议和资产配置方案。</p>
+</div>
+<div style="border: 2px solid #4CAF50; padding: 10px; margin: 10px 0; border-radius: 5px; cursor: pointer;">
+    <p style="margin: 0; font-size: 16px;">**AI制作PPT**：根据您的需求自动生成高质量的PPT。</p>
+</div>
+<div style="border: 2px solid #4CAF50; padding: 10px; margin: 10px 0; border-radius: 5px; cursor: pointer;">
+    <p style="margin: 0; font-size: 16px;">**论文查重**：为您提供快速准确的论文查重服务。</p>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 st.markdown("**立即付费**")
