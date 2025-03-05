@@ -134,17 +134,13 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
-# 添加付费功能按钮
-st.markdown("---")
-st.markdown("**解锁更多功能**")
-if st.button("付费使用智能投顾"):
-    # 设置查询参数
-    st.query_params["page"] = "smart_advisor"
-    st.rerun()  # 重新运行应用以应用新的查询参数[^34^]
 
-# 处理页面跳转
-query_params = st.query_params
-if "page" in query_params and query_params["page"] == "smart_advisor":
-    # 如果有智能投顾助手页面，则在这里加载
-    st.title("智能投顾助手")
-    st.write("这里是智能投顾助手的内容。")
+# 添加跳转到智能投顾助手的按钮
+if st.button("进入智能投顾助手"):
+    st.session_state.page = "smart_advisor"
+    st.experimental_rerun()
+
+# 根据页面状态显示对应页面
+if "page" in st.session_state and st.session_state.page == "smart_advisor":
+    # 跳转到智能投顾助手页面
+    webbrowser.open("http://localhost:8501/smart_advisor")
