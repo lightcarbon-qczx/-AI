@@ -2,6 +2,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel, PeftConfig
 import streamlit as st
+import webbrowser
 
 # 标题和说明
 st.title("💬 中央财经大学-财智AI")
@@ -132,3 +133,11 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
         # 展示回答
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
+
+# 添加付费功能按钮
+st.markdown("---")
+st.markdown("**解锁更多功能**")
+if st.button("付费使用智能投顾"):
+    # 智能投顾助手的网址
+    url = "https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/"
+    webbrowser.open(url)
