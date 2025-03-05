@@ -1,7 +1,8 @@
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel, PeftConfig
 import streamlit as st
+import asyncio
 
 # 标题和说明
 st.title("💬 中央财经大学-财智AI")
@@ -21,9 +22,9 @@ with st.sidebar:
     
     # 添加生成参数
     st.header("生成参数")
-    max_new_tokens = st.slider("最大生成长度", 50, 512, 256, help="控制生成文本的最大长度。")
-    temperature = st.slider("随机性", 0.1, 1.0, 0.7, help="控制生成文本的随机性，值越高越随机。")
-    top_p = st.slider("Top-p 采样", 0.1, 1.0, 0.9, help="控制生成文本的多样性，值越高越多样。")
+    max_new_tokens = st.slider("最大生成长度", 50, 512, 128, help="控制生成文本的最大长度。")
+    temperature = st.slider("随机性", 0.1, 1.0, 0.5, help="控制生成文本的随机性，值越高越随机。")
+    top_p = st.slider("Top-p 采样", 0.1, 1.0, 0.8, help="控制生成文本的多样性，值越高越多样。")
     
     # 添加分隔线
     st.markdown("---")
@@ -48,12 +49,19 @@ with st.sidebar:
 @st.cache_resource
 def load_model():
     # 先加载适配器配置
-    adapter_path = r"qwen_finance_model"
+    adapter_path = "qwen_finance_model"
     config = PeftConfig.from_pretrained(adapter_path)
+    
+    # 配置量化
+    quantization_config = BitsAndBytesConfig(
+        load_in_8bit=True,  # 8-bit 量化
+        llm_int8_threshold=6.0,
+    )
     
     # 加载基础模型（增加low_cpu_mem_usage参数）
     base_model = AutoModelForCausalLM.from_pretrained(
         config.base_model_name_or_path,
+        quantization_config=quantization_config,
         torch_dtype=torch.bfloat16,
         device_map="auto",
         low_cpu_mem_usage=True  # 减少内存占用
@@ -101,7 +109,7 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
     with st.chat_message("assistant"):
         with st.spinner("正在生成回答..."):
             # 编码输入
-            inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
+            inputs = tokenizer(full_prompt, return_tensors="pt", truncation=True, max_length=512).to(model.device)
             
             # 生成参数配置
             generate_kwargs = {
