@@ -2,7 +2,6 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel, PeftConfig
 import streamlit as st
-import asyncio
 
 # 标题和说明
 st.title("💬 中央财经大学-财智AI")
