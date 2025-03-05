@@ -138,11 +138,12 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
 st.markdown("---")
 st.markdown("**解锁更多功能**")
 if st.button("付费使用智能投顾"):
-    # 跳转到智能投顾助手页面
-    st.experimental_set_query_params(page="smart_advisor")
+    # 设置查询参数
+    st.query_params["page"] = "smart_advisor"
 
 # 处理页面跳转
-query_params = st.experimental_get_query_params()
-if "page" in query_params and query_params["page"][0] == "smart_advisor":
+query_params = st.query_params
+if "page" in query_params and query_params["page"] == "smart_advisor":
     # 如果有智能投顾助手页面，则在这里加载
-    st.write("智能投顾助手页面内容")
+    st.title("智能投顾助手")
+    st.write("这里是智能投顾助手的内容。")
