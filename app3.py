@@ -141,14 +141,21 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
-# 添加跳转到智能投顾助手的按钮
-if st.button("进入智能投顾助手"):
-    st.session_state.page = "smart_advisor"
+# 付费功能的说明和按钮
+st.markdown("---")
+st.markdown("**付费功能**")
+st.markdown("以下是我们的付费功能：")
+st.markdown("- **智能投顾助手**：为您提供专业的投资建议和资产配置方案。")
+st.markdown("- **AI制作PPT**：根据您的需求自动生成高质量的PPT。")
+st.markdown("- **论文查重**：为您提供快速准确的论文查重服务。")
 
-# 根据页面状态显示对应页面
-if "page" in st.session_state and st.session_state.page == "smart_advisor":
-    # 清空当前页面的内容
-    st.empty()
-    # 加载智能投顾助手页面
-    with open("smart_advisor.py", "r", encoding="utf-8") as f:
-        exec(f.read())
+st.markdown("---")
+st.markdown("**立即付费**")
+st.markdown("[前往付费页面](https://www.cufe-aiteam.com/pay)")
+st.markdown("如果您已经是付费用户，请输入您的付费凭证：")
+paid_code = st.text_input("付费凭证")
+if st.button("验证"):
+    if paid_code == "your_paid_code":  # 替换为实际的付费凭证验证逻辑
+        st.success("验证成功！您已成功解锁付费功能。")
+    else:
+        st.error("验证失败，请检查您的付费凭证。")
