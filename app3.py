@@ -134,13 +134,8 @@ if prompt := st.chat_input("这里是助手小云，请输入您的金融相关�
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
-
-# 添加跳转到智能投顾助手的按钮
 if st.button("进入智能投顾助手"):
     st.session_state.page = "smart_advisor"
-    st.experimental_rerun()
 
-# 根据页面状态显示对应页面
 if "page" in st.session_state and st.session_state.page == "smart_advisor":
-    # 跳转到智能投顾助手页面
-    webbrowser.open("http://localhost:8501/smart_advisor")
+    webbrowser.open("https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/")
