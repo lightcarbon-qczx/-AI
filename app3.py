@@ -140,6 +140,7 @@ st.markdown("**解锁更多功能**")
 if st.button("付费使用智能投顾"):
     # 设置查询参数
     st.query_params["page"] = "smart_advisor"
+    st.rerun()  # 重新运行应用以应用新的查询参数[^34^]
 
 # 处理页面跳转
 query_params = st.query_params
