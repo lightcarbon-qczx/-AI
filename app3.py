@@ -2,7 +2,10 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer,pipeline
 from peft import PeftModel, PeftConfig
 import streamlit as st
-import webbrowser
+import logging
+
+# 配置日志
+logging.basicConfig(filename="app.log", level=logging.INFO)
 
 # 设置页面配置（必须在第一个命令中调用）
 st.set_page_config(
@@ -32,8 +35,9 @@ with st.sidebar:
     max_new_tokens = st.slider("最大生成长度", 50, 512, 256, help="控制生成文本的最大长度。")
     temperature = st.slider("随机性", 0.1, 1.0, 0.7, help="控制生成文本的随机性，值越高越随机。")
     top_p = st.slider("Top-p 采样", 0.1, 1.0, 0.9, help="控制生成文本的多样性，值越高越多样。")
-    
+     repetition_penalty = st.slider("重复惩罚", 1.0, 2.0, 1.2)
     # 添加分隔线
+
     st.markdown("---")
     
     # 添加团队介绍
