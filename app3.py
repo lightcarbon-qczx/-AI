@@ -70,27 +70,35 @@ def load_model():
     # 加载适配器（添加适配器名称参数）
     model = PeftModel.from_pretrained(
         base_model,
-        adapter_path,
-        adapter_name="finance_adapter"
+        adapter_path
     )
-    
-    # 延迟权重合并（仅在需要时）
-    if not isinstance(model, PeftModel):
-        model = model.merge_and_unload()
-    
+    model = model.merge_and_unload()  # 强制合并适配器
+    # 加载tokenizer
     tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
     return model, tokenizer
+     # 设置评估模式
+    model.eval()
+    
+    return model, tokenizer
 
-# 显示加载状态
+# 加载模型
 with st.spinner("正在加载模型..."):
-    model, tokenizer = load_model()
-# 使用 pipeline 加速生成
+    try:
+        model, tokenizer = load_model()
+        # 检查模型设备
+        device = 0 if model.device.type == "cuda" else -1
+    except Exception as e:
+        st.error(f"模型加载失败: {str(e)}")
+        st.stop()
+
+# 创建pipeline（关键修改点）
 text_generator = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    device=model.device.index if model.device != torch.device("cpu") else -1
+    device=device  # 使用自动检测的设备
 )
+
 # 对话界面
 if "messages" not in st.session_state:
     st.session_state.messages = []
