@@ -52,53 +52,58 @@ with st.sidebar:
     st.markdown("📧 邮箱: [13292017003@163.com](mailto:aiteam@cufe.edu.cn)")
     st.markdown("🌐 官网: [www.cufe-aiteam.com](https://www.cufe-aiteam.com)")
 
-# 加载模型函数（缓存优化）
+# 加载模型函数（关键修改点）
 @st.cache_resource
 def load_model():
-    # 先加载适配器配置
-    adapter_path = r"qwen_finance_model"
-    config = PeftConfig.from_pretrained(adapter_path)
-    
-    # 加载基础模型（增加low_cpu_mem_usage参数）
-    base_model = AutoModelForCausalLM.from_pretrained(
-        config.base_model_name_or_path,
-        torch_dtype=torch.bfloat16,
-        device_map="auto",
-        low_cpu_mem_usage=True  # 减少内存占用
-    )
-    
-    # 加载适配器（添加适配器名称参数）
-    model = PeftModel.from_pretrained(
-        base_model,
-        adapter_path
-    )
-    model = model.merge_and_unload()  # 强制合并适配器
-    # 加载tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
-    return model, tokenizer
-     # 设置评估模式
-    model.eval()
-    
-    return model, tokenizer
-
-# 加载模型
-with st.spinner("正在加载模型..."):
     try:
-        model, tokenizer = load_model()
-        # 检查模型设备
-        device = 0 if model.device.type == "cuda" else -1
+        adapter_path = "qwen_finance_model"
+        config = PeftConfig.from_pretrained(adapter_path)
+        
+        # 加载基础模型
+        base_model = AutoModelForCausalLM.from_pretrained(
+            config.base_model_name_or_path,
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+            low_cpu_mem_usage=True
+        )
+        
+        # 加载并强制合并适配器
+        model = PeftModel.from_pretrained(base_model, adapter_path)
+        model = model.merge_and_unload()  # 确保合并适配器
+        
+        # 加载tokenizer（强制从基础模型路径加载）
+        tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
+        
+        # 验证模型类型
+        if "Peft" in str(type(model)):
+            raise ValueError("适配器未正确合并")
+            
+        model.eval()
+        return model, tokenizer
+        
     except Exception as e:
         st.error(f"模型加载失败: {str(e)}")
         st.stop()
 
-# 创建pipeline（关键修改点）
-text_generator = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer,
-    device=device  # 使用自动检测的设备
-)
+# 加载模型
+with st.spinner("正在加载模型..."):
+    model, tokenizer = load_model()
+    # 调试信息（可选）
+    print(f"Model device: {model.device}")
+    print(f"Model dtype: {model.dtype}")
+    print(f"Tokenizer length: {len(tokenizer)}")
 
+# 创建pipeline（关键修改点）
+try:
+    text_generator = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        device=model.device.index if model.device.type == "cuda" else -1
+    )
+except Exception as e:
+    st.error(f"Pipeline创建失败: {str(e)}")
+    st.stop()
 # 对话界面
 if "messages" not in st.session_state:
     st.session_state.messages = []
