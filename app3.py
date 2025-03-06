@@ -99,7 +99,7 @@ try:
         "text-generation",
         model=model,
         tokenizer=tokenizer,
-        device=model.device.index if model.device.type == "cuda" else -1
+        
     )
 except Exception as e:
     st.error(f"Pipeline创建失败: {str(e)}")
