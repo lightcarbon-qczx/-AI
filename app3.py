@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer,pipeline
 from peft import PeftModel, PeftConfig
 import streamlit as st
 import webbrowser
@@ -49,7 +49,7 @@ with st.sidebar:
     # 添加联系方式
     st.markdown("---")
     st.markdown("**联系我们**")
-    st.markdown("📧 邮箱: [aiteam@cufe.edu.cn](mailto:aiteam@cufe.edu.cn)")
+    st.markdown("📧 邮箱: [13292017003@163.com](mailto:aiteam@cufe.edu.cn)")
     st.markdown("🌐 官网: [www.cufe-aiteam.com](https://www.cufe-aiteam.com)")
 
 # 加载模型函数（缓存优化）
@@ -84,7 +84,13 @@ def load_model():
 # 显示加载状态
 with st.spinner("正在加载模型..."):
     model, tokenizer = load_model()
-
+# 使用 pipeline 加速生成
+text_generator = pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer,
+    device=model.device.index if model.device != torch.device("cpu") else -1
+)
 # 对话界面
 if "messages" not in st.session_state:
     st.session_state.messages = []
