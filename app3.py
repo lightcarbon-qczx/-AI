@@ -278,13 +278,27 @@ def main():
     st.markdown("**立即付费**")
     st.markdown("[前往付费页面](https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/)")
     st.markdown("如果您已经是付费用户，请输入您对应付费功能的凭证：")
+    # 付费凭证验证部分
+if "paid_code_verified" not in st.session_state:
+    st.session_state.paid_code_verified = False
+
+if not st.session_state.paid_code_verified:
+    st.markdown("如果您已经是付费用户，请输入您对应付费功能的凭证：")
     paid_code = st.text_input("付费凭证")
     if st.button("验证"):
         if paid_code == "your_paid_code":  # 替换为实际的付费凭证验证逻辑
+            st.session_state.paid_code_verified = True
             st.success("验证成功！您已成功解锁付费功能。")
         else:
             st.error("验证失败，请检查您的付费凭证。")
-
+else:
+    if st.button("进入付费功能页面"):
+        # 使用HTML的<a>标签实现跳转
+        st.markdown(f'''
+            <a href="https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/" target="_blank">
+                点击这里进入付费功能页面
+            </a>
+        ''', unsafe_allow_html=True)
 # 主程序
 if __name__ == "__main__":
     if not st.session_state.logged_in:
