@@ -292,11 +292,11 @@ def main():
             else:
                 st.error("验证失败，请检查您的付费凭证。")
     else:
-    st.markdown(f'''
-        <a href="https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/" target="_blank" style="display: inline-block; padding: 0.5em 1em; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+         st.markdown(f'''
+            <a href="https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/" target="_blank" style="display: inline-block; padding: 0.5em 1em; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">
             进入付费功能页面
-        </a>
-    ''', unsafe_allow_html=True)
+            </a>
+          ''', unsafe_allow_html=True)
 
 # 主程序
 if __name__ == "__main__":
