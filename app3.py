@@ -178,7 +178,7 @@ st.markdown("- **人工审核**：我公司持牌分析师为您量化定制投�
 
 st.markdown("---")
 st.markdown("**立即付费**")
-st.markdown("[前往付费页面](https://www.cufe-aiteam.com/pay)")
+st.markdown("[前往付费页面](https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/)")
 st.markdown("如果您已经是付费用户，请输入您对应付费功能的凭证：")
 paid_code = st.text_input("付费凭证")
 if st.button("验证"):
