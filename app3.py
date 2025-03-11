@@ -292,13 +292,11 @@ def main():
             else:
                 st.error("验证失败，请检查您的付费凭证。")
     else:
-        if st.button("进入付费功能页面"):
-            # 使用HTML的<a>标签实现跳转
-            st.markdown(f'''
-                <a href="https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/" target="_blank">
-                    点击这里进入付费功能页面
-                </a>
-            ''', unsafe_allow_html=True)
+    st.markdown(f'''
+        <a href="https://mtcuqf2rh8tvrdkyvgyjm2.streamlit.app/" target="_blank" style="display: inline-block; padding: 0.5em 1em; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+            进入付费功能页面
+        </a>
+    ''', unsafe_allow_html=True)
 
 # 主程序
 if __name__ == "__main__":
