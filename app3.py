@@ -12,6 +12,7 @@ st.set_page_config(
     page_title="财智AI - 金融问答助手",
     page_icon="💬",
     layout="wide"
+    toolbarMode = "minimal"
 )
 
 # 标题和说明
