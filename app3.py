@@ -147,7 +147,7 @@ def main():
         """)
         
         # 添加图片（可选）
-        st.image("图片1.jpg", caption="财智AI Logo", use_column_width=True)
+        st.image("图片1.jpg", caption="财智AI Logo", use_container_width=True)
         
         # 添加联系方式
         st.markdown("---")
