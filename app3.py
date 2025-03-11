@@ -5,6 +5,74 @@ from transformers import AutoModelForCausalLM, AutoTokenizer,pipeline
 from peft import PeftModel, PeftConfig
 import streamlit as st
 import logging
+import pandas as pd
+import streamlit_authenticator as stauth
+import yaml
+from yaml.loader import SafeLoader
+import time
+import requests
+import hashlib
+# 用户数据文件路径
+USER_DATA_FILE = "users.yaml"
+
+# 加载用户数据
+def load_users():
+    try:
+        with open(USER_DATA_FILE, "r") as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError:
+        return {}
+
+# 保存用户数据
+def save_users(users):
+    with open(USER_DATA_FILE, "w") as file:
+        yaml.dump(users, file)
+
+# 初始化会话状态
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+# 初始化用户数据
+USERS = load_users()
+
+# 登录注册页面
+def login_register():
+    st.title("用户登录/注册")
+    st.divider()
+
+    # 切换登录/注册
+    login_type = st.radio("选择操作", ("登录", "注册"))
+
+    if login_type == "登录":
+        username = st.text_input("用户名")
+        password = st.text_input("密码", type="password")
+
+        if st.button("登录"):
+            if username in USERS and USERS[username]["password"] == password:
+                st.session_state.logged_in = True
+                st.success("登录成功!")
+                time.sleep(0.5)
+                st.rerun()
+            else:
+                st.error("用户名或密码错误")
+
+    else:
+        new_username = st.text_input("新用户名")
+        new_password = st.text_input("新密码", type="password")
+
+        if st.button("注册"):
+            if new_username in USERS:
+                st.error("用户名已存在")
+            else:
+                USERS[new_username] = {
+                    "name": new_username,
+                    "password": new_password,
+                    "subscription": "免费"
+                }
+                save_users(USERS)
+                st.success("注册成功! 请登录.")
+                time.sleep(0.5)
+                st.rerun()
 
 # 配置日志
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -189,3 +257,14 @@ if st.button("验证"):
         st.success("验证成功！您已成功解锁付费功能。")
     else:
         st.error("验证失败，请检查您的付费凭证。")
+# 主程序
+if __name__ == "__main__":
+    if not st.session_state.logged_in:
+        login_register()
+    else:
+        main()
+
+        # 退出登录
+        if st.sidebar.button("退出登录"):
+            st.session_state.logged_in = False
+            st.rerun()
