@@ -43,30 +43,58 @@ def login_register():
     login_type = st.radio("选择操作", ("登录", "注册"))
 
     if login_type == "登录":
-        username = st.text_input("用户名")
+        login_method = st.radio("选择登录方式", ("用户名", "手机号"))
+        if login_method == "用户名":
+            username = st.text_input("用户名")
+        else:
+            phone = st.text_input("手机号")
         password = st.text_input("密码", type="password")
 
         if st.button("登录"):
-            if username in USERS and USERS[username]["password"] == password:
-                st.session_state.logged_in = True
-                st.success("登录成功!")
-                time.sleep(0.5)
-                st.rerun()  # 重新运行应用以加载主界面
+            if login_method == "用户名":
+                if username in USERS and USERS[username]["password"] == password:
+                    st.session_state.logged_in = True
+                    st.success("登录成功!")
+                    time.sleep(0.5)
+                    st.rerun()  # 重新运行应用以加载主界面
+                else:
+                    st.error("用户名或密码错误")
             else:
-                st.error("用户名或密码错误")
+                found = False
+                for user in USERS.values():
+                    if "phone" in user and user["phone"] == phone and user["password"] == password:
+                        st.session_state.logged_in = True
+                        st.success("登录成功!")
+                        time.sleep(0.5)
+                        st.rerun()  # 重新运行应用以加载主界面
+                        found = True
+                        break
+                if not found:
+                    st.error("手机号或密码错误")
 
     else:
         new_username = st.text_input("新用户名")
         new_password = st.text_input("新密码", type="password")
+        new_phone = st.text_input("手机号（可选，用于登录和找回密码）")
 
         if st.button("注册"):
-            if new_username in USERS:
+            username_exists = False
+            phone_exists = False
+            for user in USERS.values():
+                if user["name"] == new_username:
+                    username_exists = True
+                if "phone" in user and user["phone"] == new_phone:
+                    phone_exists = True
+            if username_exists:
                 st.error("用户名已存在")
+            elif phone_exists:
+                st.error("手机号已存在")
             else:
                 USERS[new_username] = {
                     "name": new_username,
                     "password": new_password,
-                    "subscription": "免费"
+                    "subscription": "免费",
+                    "phone": new_phone
                 }
                 save_users(USERS)
                 st.success("注册成功! 请登录.")
