@@ -11,7 +11,7 @@ logging.basicConfig(filename="app.log", level=logging.INFO)
 st.set_page_config(
     page_title="财智AI - 金融问答助手",
     page_icon="💬",
-    toolbarMode = "minimal"
+    layout="wide"
 )
 
 # 标题和说明
