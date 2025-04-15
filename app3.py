@@ -60,7 +60,7 @@ with st.sidebar:
 @st.cache_resource
 def load_model():
     try:
-        adapter_path = "C:/Users/周强1/Desktop/qwen_finance_model"
+        adapter_path = "qwen_finance_model"
         config = PeftConfig.from_pretrained(adapter_path)
         
         # 加载基础模型
