@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # 标题和说明
-st.title("💬 中央财经大学-财智AI")
+st.title("💬 财智AI")
 st.caption("基于 Qwen2.5-1.5B 微调的金融 FAQ 问答系统")
 
 # 侧边栏配置生成参数和介绍
@@ -23,7 +23,7 @@ with st.sidebar:
     # 添加标题和介绍
     st.title("💬 财智AI")
     st.markdown("""
-        **中央财经大学财智AI团队**  
+        **财智AI团队**  
         这是一个基于 Qwen2.5-1.5B 微调的金融问答助手，专门回答金融相关问题。
     """)
     
@@ -43,7 +43,7 @@ with st.sidebar:
     # 添加团队介绍
     st.header("关于我们")
     st.markdown("""
-        我们是中央财经大学财智AI团队，专注于金融领域的自然语言处理技术研究。  
+        我们是财智AI团队，专注于金融领域的自然语言处理技术研究。  
         我们的目标是打造一个智能、高效的金融问答助手，为用户提供专业的金融服务。
     """)
     
@@ -54,7 +54,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**联系我们**")
     st.markdown("📧 邮箱: [13292017003@163.com](mailto:aiteam@cufe.edu.cn)")
-    st.markdown("🌐 官网: [www.cufe-aiteam.com](https://www.cufe-aiteam.com)")
+    st.markdown("🌐 官网: ")
 
 # 加载模型函数（关键修改点）
 @st.cache_resource
