@@ -48,7 +48,7 @@ with st.sidebar:
     """)
     
     # Placeholder image
-    st.image("图片1.jpg", caption="银巢 Logo", use_column_width=True)
+    st.image("图片1.jpg", caption="银巢 Logo", use_container_width=True)
     
     # Contact information
     st.markdown("---")
