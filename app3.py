@@ -234,7 +234,7 @@ if prompt := st.chat_input("有什么可以帮助您的？"):
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
 # 语音输入
-if st.button("上传音频文件"):
+if st.button("语音聊天"):
     audio_file = upload_audio()
     if audio_file:
         with st.spinner("正在识别语音..."):
