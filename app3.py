@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 import base64
+from matplotlib import font_manager
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -30,14 +31,14 @@ st.set_page_config(
     }
 )
 
-# Enhanced custom CSS for a polished and elderly-friendly design
+# Enhanced custom CSS with cyan buttons and background
 st.markdown("""
     <style>
     .stApp {
         font-family: 'Noto Sans', sans-serif;
         font-size: 18px;
         color: #2E2E2E;
-        background-color: #F9FBFC;
+        background: linear-gradient(to bottom, #E0F7FA, #F9FBFC); /* Soft cyan to white gradient */
     }
     .stSidebar {
         background-color: #E8F0F2;
@@ -45,7 +46,7 @@ st.markdown("""
         border-right: 2px solid #D3E0E5;
     }
     .stButton>button {
-        background-color: #4CAF50;
+        background-color: #26A69A; /* Cyan button color */
         color: white;
         border: none;
         border-radius: 8px;
@@ -54,7 +55,7 @@ st.markdown("""
         transition: background-color 0.3s;
     }
     .stButton>button:hover {
-        background-color: #45A049;
+        background-color: #00897B; /* Darker cyan on hover */
     }
     .stTextInput>input, .stTimeInput input, .stNumberInput input {
         font-size: 16px;
@@ -270,8 +271,7 @@ with st.expander("记录您的健康数据"):
             st.warning("您的心率可能异常，请注意休息并咨询专业意见。")
         else:
             st.success("您的健康数据正常，继续保持！")
-plt.rcParams['font.sans-serif'] = ['SimHei']
-plt.rcParams['axes.unicode_minus'] = False
+
 # Plot health data
 if "health_data" in st.session_state and st.session_state.health_data:
     st.markdown("### 健康数据趋势")
@@ -279,31 +279,33 @@ if "health_data" in st.session_state and st.session_state.health_data:
     df = pd.DataFrame(st.session_state.health_data)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     
+    # Set Chinese font for Matplotlib
+    plt.rcParams['font.family'] = 'Noto Sans CJK SC'
+    plt.rcParams['axes.unicode_minus'] = False եկ
+
     # Create line plot
-    plt.rcParams['font.sans-serif'] = ['SimHei']
-    plt.rcParams['axes.unicode_minus'] = False
     plt.figure(figsize=(10, 6))
-    plt.plot(df["timestamp"], df["bp_systolic"], label=" (mmHg)", color="red", marker="o")
-    plt.plot(df["timestamp"], df["bp_diastolic"], label=" (mmHg)", color="blue", marker="o")
-    plt.plot(df["timestamp"], df["heart_rate"], label="heart rate (次/分钟)", color="green", marker="o")
+    plt.plot(df["timestamp"], df["bp_systolic"], label="收缩压 (mmHg)", color="red", marker="o")
+    plt.plot(df["timestamp"], df["bp_diastolic"], label="舒张压 (mmHg)", color="blue", marker="o")
+    plt.plot(df["timestamp"], df["heart_rate"], label="心率 (次/分钟)", color="green", marker="o")
     
     # Customize plot for elderly users
-    plt.title("", fontsize=20, pad=15)
-    plt.xlabel("time", fontsize=16)
-    plt.ylabel("", fontsize=16)
+    plt.title("健康数据趋势", fontsize=20, pad=15)
+    plt.xlabel("时间", fontsize=16)
+    plt.ylabel("数值", fontsize=16)
     plt.legend(fontsize=14)
     plt.grid(True)
     plt.xticks(rotation=45, fontsize=12)
     plt.yticks(fontsize=12)
     plt.tight_layout()
     
-    # Save and KeePass (e.g. save to a buffer instead of a file)
+    # Save to buffer
     buffer = io.BytesIO()
     plt.savefig(buffer, format="png")
     buffer.seek(0)
     
     # Display the plot
-    st.image(buffer, use_container_width=True)
+    st.image(buffer, use_column_width=True)
     
     # Close the plot to free memory
     plt.close()
