@@ -283,14 +283,14 @@ if "health_data" in st.session_state and st.session_state.health_data:
     plt.rcParams['font.sans-serif'] = ['SimHei']
     plt.rcParams['axes.unicode_minus'] = False
     plt.figure(figsize=(10, 6))
-    plt.plot(df["timestamp"], df["bp_systolic"], label="收缩压 (mmHg)", color="red", marker="o")
-    plt.plot(df["timestamp"], df["bp_diastolic"], label="舒张压 (mmHg)", color="blue", marker="o")
-    plt.plot(df["timestamp"], df["heart_rate"], label="心率 (次/分钟)", color="green", marker="o")
+    plt.plot(df["timestamp"], df["bp_systolic"], label=" (mmHg)", color="red", marker="o")
+    plt.plot(df["timestamp"], df["bp_diastolic"], label=" (mmHg)", color="blue", marker="o")
+    plt.plot(df["timestamp"], df["heart_rate"], label="heart rate (次/分钟)", color="green", marker="o")
     
     # Customize plot for elderly users
-    plt.title("健康数据趋势", fontsize=20, pad=15)
-    plt.xlabel("时间", fontsize=16)
-    plt.ylabel("数值", fontsize=16)
+    plt.title("", fontsize=20, pad=15)
+    plt.xlabel("time", fontsize=16)
+    plt.ylabel("", fontsize=16)
     plt.legend(fontsize=14)
     plt.grid(True)
     plt.xticks(rotation=45, fontsize=12)
