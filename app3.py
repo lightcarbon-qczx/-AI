@@ -281,7 +281,7 @@ if "health_data" in st.session_state and st.session_state.health_data:
     
     # Set Chinese font for Matplotlib
     plt.rcParams['font.family'] = 'Noto Sans CJK SC'
-    plt.rcParams['axes.unicode_minus'] = False եկ
+    plt.rcParams['axes.unicode_minus'] = False
 
     # Create line plot
     plt.figure(figsize=(10, 6))
