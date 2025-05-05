@@ -13,3 +13,4 @@ torch
 schedule
 matplotlib
 pandas
+speech_recognition
