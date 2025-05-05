@@ -3,6 +3,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from peft import PeftModel, PeftConfig
 import streamlit as st
 import logging
+import random
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -14,43 +15,30 @@ st.set_page_config(
     layout="wide"
 )
 
+# Custom CSS for better readability
+st.markdown("""
+    <style>
+    .stApp {
+        font-size: 18px;
+        color: #333333;
+        background-color: #f0f0f0;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Title and description
 st.title("👴 银巢 - 智慧伴老平台")
-st.caption("基于 Qwen2-1.5B 微调的智慧伴老平台，为老年人提供陪伴、情感关怀和智能助手服务")
+st.caption("您的虚拟伴侣，随时为您提供陪伴和帮助")
 
 # Sidebar configuration
 with st.sidebar:
-    # Title and introduction
     st.title("👴 银巢")
-    st.markdown("""
-        **银巢团队**  
-        银巢是一个专为老年人设计的智慧伴老平台，基于 Qwen2-1.5B 微调技术，扮演虚拟子女或伴侣，提供陪伴聊天、情感关怀和智能助手服务，同时支持阿尔兹海默症预防和监测功能。
-    """)
-    
-    # Divider
+    st.markdown("欢迎使用银巢，我们随时为您服务！")
+    st.markdown("银巢是一个专为老年人设计的智慧伴老平台，提供陪伴聊天、情感关怀和智能助手服务。")
     st.markdown("---")
-    
-    # Generation parameters
-    st.header("生成参数")
-    max_new_tokens = st.slider("最大生成长度", 50, 512, 256, help="控制生成文本的最大长度。")
-    temperature = st.slider("随机性", 0.1, 1.0, 0.7, help="控制生成文本的随机性，值越高越随机。")
-    top_p = st.slider("Top-p 采样", 0.1, 1.0, 0.9, help="控制生成文本的多样性，值越高越多样。")
-    repetition_penalty = st.slider("重复惩罚", 1.0, 2.0, 1.2)
-    
-    # Divider
-    st.markdown("---")
-    
-    # Team introduction
     st.header("关于我们")
-    st.markdown("""
-        我们是银巢团队，由中央财经大学、电子科技大学、南昌大学等多所高校的学生组成，致力于通过人工智能技术提升老年人的生活质量。  
-        我们的使命是为老年人提供贴心的陪伴和智能服务，缓解孤独感，促进心理健康，并助力智慧养老产业发展。
-    """)
-    
-    # Placeholder image
+    st.markdown("我们是银巢团队，致力于通过人工智能技术提升老年人的生活质量。")
     st.image("图片1.jpg", caption="银巢 Logo", use_container_width=True)
-    
-    # Contact information
     st.markdown("---")
     st.markdown("**联系我们**")
     st.markdown("📧 邮箱: [yinchao@cufe.edu.cn](mailto:yinchao@cufe.edu.cn)")
@@ -113,6 +101,13 @@ for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
 # Handle user input
+if st.button("开始聊天"):
+    prompt = "您好，我是银巢，您的虚拟伴侣！有什么可以帮助您的？"
+    st.session_state.messages.append({"role": "assistant", "content": prompt})
+    st.chat_message("assistant").write(prompt)
+elif st.button("帮助"):
+    st.write("使用指南：您可以直接在下方输入框中输入您的问题或想说的话，银巢会尽力为您提供帮助。")
+
 if prompt := st.chat_input("您好，我是银巢，您的虚拟伴侣！有什么可以帮助您的？"):
     # System prompt for 银巢
     system_prompt = "system\n你是银巢，一个基于 Qwen2-1.5B 微调的智慧伴老助手，专为老年人提供陪伴聊天、情感关怀和智能助手服务。你由中央财经大学银巢团队开发，旨在模拟虚拟子女或伴侣的角色，用温馨、亲切的语气与用户交流，并支持阿尔兹海默症预防和监测功能。\n"
@@ -130,12 +125,12 @@ if prompt := st.chat_input("您好，我是银巢，您的虚拟伴侣！有什�
             # Encode input
             inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
             
-            # Generation parameters
+            # Generation parameters (fixed values)
             generate_kwargs = {
                 "inputs": inputs.input_ids,
-                "max_new_tokens": max_new_tokens,
-                "temperature": temperature,
-                "top_p": top_p,
+                "max_new_tokens": 256,
+                "temperature": 0.7,
+                "top_p": 0.9,
                 "do_sample": True,
                 "pad_token_id": tokenizer.eos_token_id,
                 "repetition_penalty": 1.1
@@ -155,21 +150,21 @@ if prompt := st.chat_input("您好，我是银巢，您的虚拟伴侣！有什�
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
-# Paid features section
-st.markdown("---")
-st.markdown("**付费功能**")
-st.markdown("以下是银巢的付费功能：")
-st.markdown("- **个性化对话服务**：基于子女提供的聊天记录和兴趣爱好，定制更真实、贴心的对话体验。（首月仅需19.9元）")
-st.markdown("- **阿尔兹海默症监测与预防**：通过认知训练和行为分析，预防和早期监测阿尔兹海默症。（每月29.9元）")
-st.markdown("- **子女端关怀功能**：实时了解父母情绪和健康状况，发送个性化问候，防范诈骗风险。（每月15元）")
+# Health tips
+tips = ["每天喝八杯水，保持身体水分。", "适量运动，保持身心健康。", "多吃蔬菜水果，补充维生素。"]
+st.write("健康小贴士：", random.choice(tips))
 
-st.markdown("---")
-st.markdown("**立即付费**")
-st.markdown("[前往付费页面](https://yinchao.x.ai/pay)")
-st.markdown("如果您已经是付费用户，请输入您对应付费功能的凭证：")
-paid_code = st.text_input("付费凭证")
-if st.button("验证"):
-    if paid_code == "yinchao_paid_code":  # Replace with actual verification logic
-        st.success("验证成功！您已成功解锁付费功能。")
-    else:
-        st.error("验证失败，请检查您的付费凭证。")
+# More services (paid features)
+with st.expander("更多服务"):
+    st.markdown("以下是银巢的付费功能：")
+    st.markdown("- **个性化对话服务**：定制更真实、贴心的对话体验。（首月仅需19.9元）")
+    st.markdown("- **阿尔兹海默症监测与预防**：预防和早期监测阿尔兹海默症。（每月29.9元）")
+    st.markdown("- **子女端关怀功能**：实时了解父母情绪和健康状况。（每月15元）")
+    st.markdown("[了解更多](https://yinchao.x.ai/pay)")
+
+# Reminder settings
+st.sidebar.header("提醒设置")
+reminder_time = st.sidebar.time_input("设置提醒时间")
+reminder_message = st.sidebar.text_input("提醒内容", "该喝水了！")
+if st.sidebar.button("设置提醒"):
+    st.sidebar.success(f"将在 {reminder_time} 提醒您：{reminder_message}")
