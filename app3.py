@@ -236,7 +236,7 @@ with col3:
 
 # Health tips
 st.markdown("---")
-st.markdown('<h2 class="stSubheader">健康小贴士</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="stSubheader">子女留言</h2>', unsafe_allow_html=True)
 tips = ["每天喝八杯水，保持身体水分。", "适量运动，保持身心健康。", "多吃蔬菜水果，补充维生素。"]
 st.write(random.choice(tips))
 
@@ -255,7 +255,7 @@ if "tasks" in st.session_state:
 
 # Family photos
 st.markdown("---")
-st.markdown('<h2 class="stSubheader">家庭相册</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="stSubheader">家庭共享相册</h2>', unsafe_allow_html=True)
 uploaded_file = st.file_uploader("上传家庭照片", type=["jpg", "png", "jpeg"])
 if uploaded_file is not None:
     st.image(uploaded_file, caption="家庭照片", use_container_width=True)
