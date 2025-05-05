@@ -112,23 +112,19 @@ with st.sidebar:
     st.markdown("📧 [yinchao@cufe.edu.cn](mailto:yinchao@cufe.edu.cn)")
     st.markdown("🌐 [银巢官网](https://yinchao.x.ai)")
 
-# 天气 API 函数
+
+# Weather API function
 @st.cache_data
 def get_weather(city="Beijing"):
-    try:
-        api_key = st.secrets["OPENWEATHER_API_KEY"]
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        if data["cod"] == 200:
-            weather = data["weather"][0]["description"]
-            temp = data["main"]["temp"]
-            return f"{city} 今天天气: {weather}, 温度: {temp}°C"
-        return "暂无法获取天气信息"
-    except (requests.RequestException, KeyError):
-        return "天气服务不可用，请检查 API 密钥配置"
-
+    api_key = "your_openweather_api_key"  # Replace with your OpenWeather API key
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+    response = requests.get(url)
+    data = response.json()
+    if data["cod"] == 200:
+        weather = data["weather"][0]["description"]
+        temp = data["main"]["temp"]
+        return f"{city} 今天天气: {weather}, 温度: {temp}°C"
+    return "暂无法获取天气信息"
 # 笑话 API 函数
 @st.cache_data
 def get_joke():
