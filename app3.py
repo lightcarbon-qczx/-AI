@@ -15,9 +15,30 @@ import io
 import base64
 from google.cloud import speech_v1p1beta1 as speech
 import os
+import json
 
 # 配置日志
 logging.basicConfig(filename="app.log", level=logging.INFO)
+
+# 初始化 session_state
+if "reminder_triggered" not in st.session_state:
+    st.session_state.reminder_triggered = False
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "health_data" not in st.session_state:
+    st.session_state.health_data = []
+if "tasks" not in st.session_state:
+    st.session_state.tasks = []
+
+# 设置 Google Cloud 认证
+try:
+    credentials_json = st.secrets["google_cloud"]["credentials"]
+    with open("gcp_credentials.json", "w") as f:
+        f.write(credentials_json)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gcp_credentials.json"
+except KeyError:
+    st.error("Google Cloud 认证密钥未配置，请在 secrets.toml 中添加 google_cloud.credentials")
+    st.stop()
 
 # 设置页面配置
 st.set_page_config(
@@ -82,7 +103,10 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### 关于我们")
     st.markdown("银巢团队致力于通过AI技术提升老年生活品质。")
-    st.image("图片1.jpg", caption="银巢 Logo", use_container_width=True)
+    try:
+        st.image("图片1.jpg", caption="银巢 Logo", use_container_width=True)
+    except FileNotFoundError:
+        st.warning("图片1.jpg 未找到，请上传正确的图片文件")
     st.markdown("---")
     st.markdown("**联系我们**")
     st.markdown("📧 [yinchao@cufe.edu.cn](mailto:yinchao@cufe.edu.cn)")
@@ -102,8 +126,8 @@ def get_weather(city="Beijing"):
             temp = data["main"]["temp"]
             return f"{city} 今天天气: {weather}, 温度: {temp}°C"
         return "暂无法获取天气信息"
-    except requests.RequestException:
-        return "暂无法获取天气信息"
+    except (requests.RequestException, KeyError):
+        return "天气服务不可用，请检查 API 密钥配置"
 
 # 笑话 API 函数
 @st.cache_data
@@ -130,8 +154,8 @@ def get_news():
             headlines = [article["title"] for article in data["articles"][:3]]
             return "\n".join(headlines)
         return "暂无法获取新闻信息"
-    except requests.RequestException:
-        return "暂无法获取新闻信息"
+    except (requests.RequestException, KeyError):
+        return "新闻服务不可用，请检查 API 密钥配置"
 
 # 加载模型函数
 @st.cache_resource
@@ -167,7 +191,7 @@ except Exception as e:
 
 # 上传音频文件
 def upload_audio():
-    uploaded_file = st.file_uploader("上传音频文件", type=["wav", "mp3"])
+    uploaded_file = st.file_uploader("上传音频文件（WAV 或 MP3）", type=["wav", "mp3"])
     if uploaded_file is not None:
         return uploaded_file
     return None
@@ -185,13 +209,11 @@ def audio_to_text(audio_file):
         response = client.recognize(config=config, audio=audio)
         for result in response.results:
             return result.alternatives[0].transcript
+        return "未识别到语音内容"
     except Exception as e:
         return f"语音识别错误: {e}"
 
 # 聊天界面
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
@@ -227,30 +249,32 @@ if prompt := st.chat_input("有什么可以帮助您的？"):
 if st.button("上传音频文件"):
     audio_file = upload_audio()
     if audio_file:
-        text = audio_to_text(audio_file)
-        st.write(f"识别结果: {text}")
-        st.session_state.messages.append({"role": "user", "content": text})
-        st.chat_message("user").write(text)
-        # 自动将识别结果作为输入处理
-        system_prompt = "system\n你是银巢，一个基于 Qwen2-1.5B 微调的智慧伴老助手，专为老年人提供陪伴聊天、情感关怀和智能助手服务。你由中央财经大学银巢团队开发，旨在模拟虚拟子女或伴侣的角色，用温馨、亲切的语气与用户交流，并支持阿尔兹海默症预防和监测功能。\n"
-        full_prompt = system_prompt + f"user\n{text}\nassistant\n"
-        with st.chat_message("assistant"):
-            with st.spinner("正在生成回答..."):
-                inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
-                generate_kwargs = {
-                    "inputs": inputs.input_ids,
-                    "max_new_tokens": 256,
-                    "temperature": 0.7,
-                    "top_p": 0.9,
-                    "do_sample": True,
-                    "pad_token_id": tokenizer.eos_token_id,
-                    "repetition_penalty": 1.1
-                }
-                outputs = model.generate(**generate_kwargs)
-                response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-                answer = response.split("assistant\n")[-1].strip() if "assistant\n" in response else response.strip()
-            st.write(answer)
-            st.session_state.messages.append({"role": "assistant", "content": answer})
+        with st.spinner("正在识别语音..."):
+            text = audio_to_text(audio_file)
+            st.write(f"识别结果: {text}")
+            if text and not text.startswith("语音识别错误"):
+                st.session_state.messages.append({"role": "user", "content": text})
+                st.chat_message("user").write(text)
+                # 自动将识别结果作为输入处理
+                system_prompt = "system\n你是银巢，一个基于 Qwen2-1.5B 微调的智慧伴老助手，专为老年人提供陪伴聊天、情感关怀和智能助手服务。你由中央财经大学银巢团队开发，旨在模拟虚拟子女或伴侣的角色，用温馨、亲切的语气与用户交流，并支持阿尔兹海默症预防和监测功能。\n"
+                full_prompt = system_prompt + f"user\n{text}\nassistant\n"
+                with st.chat_message("assistant"):
+                    with st.spinner("正在生成回答..."):
+                        inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
+                        generate_kwargs = {
+                            "inputs": inputs.input_ids,
+                            "max_new_tokens": 256,
+                            "temperature": 0.7,
+                            "top_p": 0.9,
+                            "do_sample": True,
+                            "pad_token_id": tokenizer.eos_token_id,
+                            "repetition_penalty": 1.1
+                        }
+                        outputs = model.generate(**generate_kwargs)
+                        response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                        answer = response.split("assistant\n")[-1].strip() if "assistant\n" in response else response.strip()
+                    st.write(answer)
+                    st.session_state.messages.append({"role": "assistant", "content": answer})
 
 # 动态功能区域
 st.markdown('<h2 class="stSubheader">每日动态</h2>', unsafe_allow_html=True)
@@ -273,8 +297,6 @@ with st.expander("记录您的健康数据"):
     bp_diastolic = st.number_input("舒张压 (mmHg)", min_value=0, max_value=200, value=80)
     heart_rate = st.number_input("心率 (次/分钟)", min_value=0, max_value=200, value=70)
     if st.button("保存健康数据"):
-        if "health_data" not in st.session_state:
-            st.session_state.health_data = []
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         st.session_state.health_data.append({
             "timestamp": timestamp,
@@ -290,7 +312,7 @@ with st.expander("记录您的健康数据"):
             st.success("您的健康数据正常，继续保持！")
 
 # 绘制健康数据趋势
-if "health_data" in st.session_state and st.session_state.health_data:
+if st.session_state.health_data:
     st.markdown("### 健康数据趋势")
     df = pd.DataFrame(st.session_state.health_data)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
@@ -318,11 +340,9 @@ if "health_data" in st.session_state and st.session_state.health_data:
 st.markdown('<h2 class="stSubheader">今日任务</h2>', unsafe_allow_html=True)
 task = st.text_input("添加新任务")
 if st.button("添加任务"):
-    if "tasks" not in st.session_state:
-        st.session_state.tasks = []
     st.session_state.tasks.append({"text": task, "completed": False})
     st.success("任务已添加！")
-if "tasks" in st.session_state:
+if st.session_state.tasks:
     for i, task in enumerate(st.session_state.tasks):
         col1, col2 = st.columns([4, 1])
         with col1:
