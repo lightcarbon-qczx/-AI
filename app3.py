@@ -14,6 +14,7 @@ import pandas as pd
 import io
 import base64
 from matplotlib import font_manager
+import speech_recognition as sr
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -36,60 +37,36 @@ st.markdown("""
     <style>
     .stApp {
         font-family: 'Noto Sans', sans-serif;
-        font-size: 18px;
-        color: #2E2E2E;
+        font-size: 20px;  /* Increase base font size */
+        color: #333333;
         background: linear-gradient(to bottom, #E0F7FA, #F9FBFC); /* Soft cyan to white gradient */
-    }
-    .stSidebar {
-        background-color: #E8F0F2;
-        padding: 20px;
-        border-right: 2px solid #D3E0E5;
     }
     .stButton>button {
         background-color: #26A69A; /* Cyan button color */
         color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 24px;
-        font-size: 18px;
-        transition: background-color 0.3s;
+        font-size: 22px;  /* Larger button font */
+        padding: 16px 28px;
+        border-radius: 12px;  /* Rounded corners */
     }
     .stButton>button:hover {
         background-color: #00897B; /* Darker cyan on hover */
     }
-    .stTextInput>input, .stTimeInput input, .stNumberInput input {
-        font-size: 16px;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #B0BEC5;
-    }
-    .stExpander {
-        background-color: #FFFFFF;
-        border: 1px solid #E0E0E0;
-        border-radius: 10px;
-        padding: 10px;
-    }
     .stTitle {
-        text-align: center;
+        font-size: 40px;  /* Larger title font */
         color: #00695C;
-        font-size: 36px;
-        font-weight: bold;
-    }
-    .stCaption {
         text-align: center;
-        color: #607D8B;
-        font-size: 18px;
     }
     .stSubheader {
         color: #00796B;
-        font-size: 24px;
+        font-size: 28px;  /* Larger subheader font */
         font-weight: 600;
-        margin-top: 20px;
+        margin-top: 25px;
     }
-    .stChatMessage {
-        border-radius: 10px;
-        padding: 15px;
-        margin: 10px 0;
+    .stTextInput>input, .stTimeInput input, .stNumberInput input {
+        font-size: 18px;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #B0BEC5;
     }
     </style>
 """, unsafe_allow_html=True)
