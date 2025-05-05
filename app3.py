@@ -279,6 +279,8 @@ if "health_data" in st.session_state and st.session_state.health_data:
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     
     # Create line plot
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    plt.rcParams['axes.unicode_minus'] = False
     plt.figure(figsize=(10, 6))
     plt.plot(df["timestamp"], df["bp_systolic"], label="收缩压 (mmHg)", color="red", marker="o")
     plt.plot(df["timestamp"], df["bp_diastolic"], label="舒张压 (mmHg)", color="blue", marker="o")
@@ -300,7 +302,7 @@ if "health_data" in st.session_state and st.session_state.health_data:
     buffer.seek(0)
     
     # Display the plot
-    st.image(buffer, use_column_width=True)
+    st.image(buffer, use_container_width=True)
     
     # Close the plot to free memory
     plt.close()
