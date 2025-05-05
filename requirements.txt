@@ -13,5 +13,4 @@ torch
 schedule
 matplotlib
 pandas
-speechrecognition
-pyaudio
+sounddevice
