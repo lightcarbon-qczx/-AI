@@ -14,7 +14,8 @@ import pandas as pd
 import io
 import base64
 from matplotlib import font_manager
-import speechrecognition as sr
+import sounddevice as sd
+import numpy as np
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -153,24 +154,18 @@ except Exception as e:
     st.error(f"Pipeline创建失败: {str(e)}")
     st.stop()
 
-# Reminder functionality
-def run_scheduler():
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+# Speech to text using sounddevice
+def record_audio(duration=5, fs=16000):
+    st.write("录音中...")
+    audio_data = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='float32')
+    sd.wait()
+    st.write("录音完成。")
+    return audio_data
 
-def send_reminder(message):
-    st.session_state.reminder_triggered = True
-    st.session_state.reminder_message = message
-
-if "reminder_triggered" not in st.session_state:
-    st.session_state.reminder_triggered = False
-if "reminder_message" not in st.session_state:
-    st.session_state.reminder_message = ""
-
-# Start scheduler in a separate thread
-scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
-scheduler_thread.start()
+def audio_to_text(audio_data, fs=16000):
+    # 将录音数据转换为文本 (在实际应用中需要语音识别API)
+    # 这里简单模拟返回文本
+    return "我想查询天气"
 
 # Chat interface
 if "messages" not in st.session_state:
@@ -206,6 +201,13 @@ if prompt := st.chat_input("有什么可以帮助您的？"):
             answer = response.split("assistant\n")[-1].strip() if "assistant\n" in response else response.strip()
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
+
+# Using speech recognition with sounddevice (simple demo)
+if st.button("语音输入"):
+    audio_data = record_audio()
+    text = audio_to_text(audio_data)
+    st.write(f"识别结果: {text}")
+    st.chat_input(text)  # Pass recognized text as input
 
 # Dynamic features section
 st.markdown('<h2 class="stSubheader">每日动态</h2>', unsafe_allow_html=True)
