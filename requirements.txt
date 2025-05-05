@@ -16,3 +16,4 @@ pip>=25.1.1
 sounddevice>=0.4.6
 SpeechRecognition>=3.8.1
 scipy>=1.10.0
+google-cloud-speech>=2.26.0
