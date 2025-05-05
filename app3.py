@@ -14,7 +14,7 @@ import pandas as pd
 import io
 import base64
 from matplotlib import font_manager
-import speech_recognition as sr
+import speechrecognition as sr
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
