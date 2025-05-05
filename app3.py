@@ -270,7 +270,8 @@ with st.expander("记录您的健康数据"):
             st.warning("您的心率可能异常，请注意休息并咨询专业意见。")
         else:
             st.success("您的健康数据正常，继续保持！")
-
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 # Plot health data
 if "health_data" in st.session_state and st.session_state.health_data:
     st.markdown("### 健康数据趋势")
