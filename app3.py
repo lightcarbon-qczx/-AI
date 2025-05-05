@@ -5,6 +5,7 @@ import streamlit as st
 import logging
 import random
 import requests
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -16,7 +17,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for white background and refined design
+# Custom CSS for refined design
 st.markdown("""
     <style>
     .stApp {
@@ -30,17 +31,38 @@ st.markdown("""
     .stButton>button {
         background-color: #e0f7fa;
         color: #00695c;
+        border: 2px solid #00695c;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    .stButton>button:hover {
+        background-color: #b2ebf2;
     }
     .stExpander {
         background-color: #fafafa;
         border-radius: 5px;
     }
+    .stTitle {
+        text-align: center;
+        color: #00695c;
+        font-size: 28px;
+    }
+    .stCaption {
+        text-align: center;
+        color: #555555;
+        font-size: 16px;
+    }
+    .stSubheader {
+        color: #00796b;
+        font-size: 22px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Title and description
-st.title("👴 银巢 - 智慧伴老平台")
-st.caption("您的虚拟伴侣，随时为您提供陪伴和帮助")
+# Title and description with custom styling
+st.markdown('<h1 class="stTitle">👴 银巢 - 智慧伴老平台</h1>', unsafe_allow_html=True)
+st.markdown('<p class="stCaption">您的虚拟伴侣，随时为您提供陪伴和帮助</p>', unsafe_allow_html=True)
 
 # Sidebar configuration
 with st.sidebar:
@@ -57,6 +79,7 @@ with st.sidebar:
     st.markdown("🌐 官网: [银巢官网](https://yinchao.x.ai)")
 
 # Weather API function
+@st.cache
 def get_weather(city="Beijing"):
     api_key = "your_openweather_api_key"  # Replace with your OpenWeather API key
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
@@ -70,11 +93,25 @@ def get_weather(city="Beijing"):
         return "无法获取天气信息"
 
 # Joke API function
+@st.cache
 def get_joke():
     url = "https://official-joke-api.appspot.com/random_joke"
     response = requests.get(url)
     data = response.json()
     return f"{data['setup']} - {data['punchline']}"
+
+# News API function
+@st.cache
+def get_news():
+    api_key = "your_news_api_key"  # Replace with your News API key
+    url = f"https://newsapi.org/v2/top-headlines?country=cn&apiKey={api_key}"
+    response = requests.get(url)
+    data = response.json()
+    if data["status"] == "ok":
+        headlines = [article["title"] for article in data["articles"][:3]]
+        return "\n".join(headlines)
+    else:
+        return "无法获取新闻信息"
 
 # Load model function
 @st.cache_resource
@@ -184,20 +221,44 @@ if prompt := st.chat_input("您好，我是银巢，您的虚拟伴侣！有什�
 
 # Dynamic features section
 st.markdown("---")
-st.subheader("每日动态")
-col1, col2 = st.columns(2)
+st.markdown('<h2 class="stSubheader">每日动态</h2>', unsafe_allow_html=True)
+col1, col2, col3 = st.columns(3)
 with col1:
     st.write("🌤️ **今日天气**")
-    st.write(get_weather("Beijing"))  # Change city as needed
+    city = st.selectbox("选择城市", ["Beijing", "Shanghai", "Guangzhou", "Shenzhen"], label_visibility="collapsed")
+    st.write(get_weather(city))
 with col2:
     st.write("😄 **每日笑话**")
     st.write(get_joke())
+with col3:
+    st.write("📰 **今日新闻**")
+    st.write(get_news())
 
 # Health tips
 st.markdown("---")
-st.subheader("健康小贴士")
+st.markdown('<h2 class="stSubheader">健康小贴士</h2>', unsafe_allow_html=True)
 tips = ["每天喝八杯水，保持身体水分。", "适量运动，保持身心健康。", "多吃蔬菜水果，补充维生素。"]
 st.write(random.choice(tips))
+
+# Task manager
+st.markdown("---")
+st.markdown('<h2 class="stSubheader">今日任务</h2>', unsafe_allow_html=True)
+task = st.text_input("添加新任务")
+if st.button("添加"):
+    if "tasks" not in st.session_state:
+        st.session_state.tasks = []
+    st.session_state.tasks.append(task)
+    st.success("任务已添加！")
+if "tasks" in st.session_state:
+    for i, t in enumerate(st.session_state.tasks):
+        st.write(f"{i+1}. {t}")
+
+# Family photos
+st.markdown("---")
+st.markdown('<h2 class="stSubheader">家庭相册</h2>', unsafe_allow_html=True)
+uploaded_file = st.file_uploader("上传家庭照片", type=["jpg", "png", "jpeg"])
+if uploaded_file is not None:
+    st.image(uploaded_file, caption="家庭照片", use_container_width=True)
 
 # More services (paid features)
 with st.expander("更多服务"):
