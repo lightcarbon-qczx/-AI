@@ -9,6 +9,10 @@ from datetime import datetime
 import schedule
 import time
 import threading
+import matplotlib.pyplot as plt
+import pandas as pd
+import io
+import base64
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -52,7 +56,7 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #45A049;
     }
-    .stTextInput>input, .stTimeInput input {
+    .stTextInput>input, .stTimeInput input, .stNumberInput input {
         font-size: 16px;
         padding: 10px;
         border-radius: 5px;
@@ -239,13 +243,27 @@ with col3:
     st.write("📰 **今日新闻**")
     st.write(get_news())
 
-# Health monitoring (New Feature)
+# Health monitoring with data collection and visualization
 st.markdown('<h2 class="stSubheader">健康监测</h2>', unsafe_allow_html=True)
 with st.expander("记录您的健康数据"):
     bp_systolic = st.number_input("收缩压 (mmHg)", min_value=0, max_value=300, value=120)
     bp_diastolic = st.number_input("舒张压 (mmHg)", min_value=0, max_value=200, value=80)
     heart_rate = st.number_input("心率 (次/分钟)", min_value=0, max_value=200, value=70)
     if st.button("保存健康数据"):
+        # Initialize health data storage
+        if "health_data" not in st.session_state:
+            st.session_state.health_data = []
+        
+        # Store new data with timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        st.session_state.health_data.append({
+            "timestamp": timestamp,
+            "bp_systolic": bp_systolic,
+            "bp_diastolic": bp_diastolic,
+            "heart_rate": heart_rate
+        })
+        
+        # Health feedback
         if bp_systolic > 140 or bp_diastolic > 90:
             st.warning("您的血压偏高，建议关注饮食和适量运动，或咨询医生。")
         elif heart_rate > 100 or heart_rate < 60:
@@ -253,7 +271,41 @@ with st.expander("记录您的健康数据"):
         else:
             st.success("您的健康数据正常，继续保持！")
 
-# Task manager with completion (Enhanced Feature)
+# Plot health data
+if "health_data" in st.session_state and st.session_state.health_data:
+    st.markdown("### 健康数据趋势")
+    # Convert health data to DataFrame
+    df = pd.DataFrame(st.session_state.health_data)
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    
+    # Create line plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(df["timestamp"], df["bp_systolic"], label="收缩压 (mmHg)", color="red", marker="o")
+    plt.plot(df["timestamp"], df["bp_diastolic"], label="舒张压 (mmHg)", color="blue", marker="o")
+    plt.plot(df["timestamp"], df["heart_rate"], label="心率 (次/分钟)", color="green", marker="o")
+    
+    # Customize plot for elderly users
+    plt.title("健康数据趋势", fontsize=20, pad=15)
+    plt.xlabel("时间", fontsize=16)
+    plt.ylabel("数值", fontsize=16)
+    plt.legend(fontsize=14)
+    plt.grid(True)
+    plt.xticks(rotation=45, fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.tight_layout()
+    
+    # Save and KeePass (e.g. save to a buffer instead of a file)
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format="png")
+    buffer.seek(0)
+    
+    # Display the plot
+    st.image(buffer, use_column_width=True)
+    
+    # Close the plot to free memory
+    plt.close()
+
+# Task manager with completion
 st.markdown('<h2 class="stSubheader">今日任务</h2>', unsafe_allow_html=True)
 task = st.text_input("添加新任务")
 if st.button("添加任务"):
@@ -277,7 +329,7 @@ uploaded_file = st.file_uploader("上传家庭照片", type=["jpg", "png", "jpeg
 if uploaded_file:
     st.image(uploaded_file, caption="家庭照片", use_container_width=True)
 
-# Reminder settings (Real Functionality)
+# Reminder settings
 st.sidebar.markdown("### 提醒设置")
 reminder_time = st.sidebar.time_input("设置提醒时间")
 reminder_message = st.sidebar.text_input("提醒内容", "该喝水了！")
