@@ -30,15 +30,7 @@ if "health_data" not in st.session_state:
 if "tasks" not in st.session_state:
     st.session_state.tasks = []
 
-# 设置 Google Cloud 认证
-try:
-    credentials_json = st.secrets["google_cloud"]["credentials"]
-    with open("gcp_credentials.json", "w") as f:
-        f.write(credentials_json)
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gcp_credentials.json"
-except KeyError:
-    st.error("Google Cloud 认证密钥未配置，请在 secrets.toml 中添加 google_cloud.credentials")
-    st.stop()
+
 
 # 设置页面配置
 st.set_page_config(
