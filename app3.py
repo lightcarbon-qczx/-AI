@@ -159,7 +159,7 @@ with st.expander("更多服务"):
     st.markdown("以下是银巢的付费功能：")
     st.markdown("- **个性化对话服务**：定制更真实、贴心的对话体验。（首月仅需19.9元）")
     st.markdown("- **阿尔兹海默症监测与预防**：预防和早期监测阿尔兹海默症。（每月29.9元）")
-    st.markdown("- **子女端关怀功能**：实时了解父母情绪和健康状况。（每月15元）")
+    st.markdown("- **子女端关怀功能**：实时了解父母情绪和健康状况。（每月150元）")
     st.markdown("[了解更多](https://yinchao.x.ai/pay)")
 
 # Reminder settings
