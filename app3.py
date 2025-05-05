@@ -4,6 +4,7 @@ from peft import PeftModel, PeftConfig
 import streamlit as st
 import logging
 import random
+import requests
 
 # Configure logging
 logging.basicConfig(filename="app.log", level=logging.INFO)
@@ -15,13 +16,24 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for better readability
+# Custom CSS for white background and refined design
 st.markdown("""
     <style>
     .stApp {
         font-size: 18px;
         color: #333333;
+        background-color: #ffffff;
+    }
+    .stSidebar {
         background-color: #f0f0f0;
+    }
+    .stButton>button {
+        background-color: #e0f7fa;
+        color: #00695c;
+    }
+    .stExpander {
+        background-color: #fafafa;
+        border-radius: 5px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -43,6 +55,26 @@ with st.sidebar:
     st.markdown("**联系我们**")
     st.markdown("📧 邮箱: [yinchao@cufe.edu.cn](mailto:yinchao@cufe.edu.cn)")
     st.markdown("🌐 官网: [银巢官网](https://yinchao.x.ai)")
+
+# Weather API function
+def get_weather(city="Beijing"):
+    api_key = "your_openweather_api_key"  # Replace with your OpenWeather API key
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+    response = requests.get(url)
+    data = response.json()
+    if data["cod"] == 200:
+        weather = data["weather"][0]["description"]
+        temp = data["main"]["temp"]
+        return f"{city} 今天天气: {weather}, 温度: {temp}°C"
+    else:
+        return "无法获取天气信息"
+
+# Joke API function
+def get_joke():
+    url = "https://official-joke-api.appspot.com/random_joke"
+    response = requests.get(url)
+    data = response.json()
+    return f"{data['setup']} - {data['punchline']}"
 
 # Load model function
 @st.cache_resource
@@ -125,7 +157,7 @@ if prompt := st.chat_input("您好，我是银巢，您的虚拟伴侣！有什�
             # Encode input
             inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
             
-            # Generation parameters (fixed values)
+            # Generation parameters
             generate_kwargs = {
                 "inputs": inputs.input_ids,
                 "max_new_tokens": 256,
@@ -150,16 +182,29 @@ if prompt := st.chat_input("您好，我是银巢，您的虚拟伴侣！有什�
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
+# Dynamic features section
+st.markdown("---")
+st.subheader("每日动态")
+col1, col2 = st.columns(2)
+with col1:
+    st.write("🌤️ **今日天气**")
+    st.write(get_weather("Beijing"))  # Change city as needed
+with col2:
+    st.write("😄 **每日笑话**")
+    st.write(get_joke())
+
 # Health tips
+st.markdown("---")
+st.subheader("健康小贴士")
 tips = ["每天喝八杯水，保持身体水分。", "适量运动，保持身心健康。", "多吃蔬菜水果，补充维生素。"]
-st.write("健康小贴士：", random.choice(tips))
+st.write(random.choice(tips))
 
 # More services (paid features)
 with st.expander("更多服务"):
     st.markdown("以下是银巢的付费功能：")
     st.markdown("- **个性化对话服务**：定制更真实、贴心的对话体验。（首月仅需19.9元）")
     st.markdown("- **阿尔兹海默症监测与预防**：预防和早期监测阿尔兹海默症。（每月29.9元）")
-    st.markdown("- **子女端关怀功能**：实时了解父母情绪和健康状况。（每月150元）")
+    st.markdown("- **子女端关怀功能**：实时了解父母情绪和健康状况。（每月15元）")
     st.markdown("[了解更多](https://yinchao.x.ai/pay)")
 
 # Reminder settings
