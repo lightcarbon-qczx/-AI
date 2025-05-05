@@ -78,8 +78,8 @@ with st.sidebar:
     st.markdown("📧 邮箱: [yinchao@cufe.edu.cn](mailto:yinchao@cufe.edu.cn)")
     st.markdown("🌐 官网: [银巢官网](https://yinchao.x.ai)")
 
-# Weather API function
-@st.cache
+# Weather API function (caching data)
+@st.cache_data
 def get_weather(city="Beijing"):
     api_key = "your_openweather_api_key"  # Replace with your OpenWeather API key
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
@@ -92,16 +92,16 @@ def get_weather(city="Beijing"):
     else:
         return "无法获取天气信息"
 
-# Joke API function
-@st.cache
+# Joke API function (caching data)
+@st.cache_data
 def get_joke():
     url = "https://official-joke-api.appspot.com/random_joke"
     response = requests.get(url)
     data = response.json()
     return f"{data['setup']} - {data['punchline']}"
 
-# News API function
-@st.cache
+# News API function (caching data)
+@st.cache_data
 def get_news():
     api_key = "your_news_api_key"  # Replace with your News API key
     url = f"https://newsapi.org/v2/top-headlines?country=cn&apiKey={api_key}"
@@ -113,7 +113,7 @@ def get_news():
     else:
         return "无法获取新闻信息"
 
-# Load model function
+# Load model function (caching resource)
 @st.cache_resource
 def load_model():
     try:
