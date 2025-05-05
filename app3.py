@@ -13,14 +13,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 import base64
-from matplotlib import font_manager
-import sounddevice as sd
-import numpy as np
+from google.cloud import speech_v1p1beta1 as speech
+import os
 
-# Configure logging
+# 配置日志
 logging.basicConfig(filename="app.log", level=logging.INFO)
 
-# Set page configuration
+# 设置页面配置
 st.set_page_config(
     page_title="银巢 - 智慧伴老平台",
     page_icon="👴",
@@ -29,37 +28,37 @@ st.set_page_config(
     menu_items={
         'Get Help': 'https://yinchao.x.ai/help',
         'Report a bug': 'mailto:yinchao@cufe.edu.cn',
-        'About': '银巢 - 智慧伴老平台，专为老年人设计。'
+        'About': '银巢 - 智慧伴老平台，专为老年用户设计。'
     }
 )
 
-# Enhanced custom CSS with cyan buttons and background
+# 自定义 CSS 样式
 st.markdown("""
     <style>
     .stApp {
         font-family: 'Noto Sans', sans-serif;
-        font-size: 20px;  /* Increase base font size */
+        font-size: 20px;
         color: #333333;
-        background: linear-gradient(to bottom, #E0F7FA, #F9FBFC); /* Soft cyan to white gradient */
+        background: linear-gradient(to bottom, #E0F7FA, #F9FBFC);
     }
     .stButton>button {
-        background-color: #26A69A; /* Cyan button color */
+        background-color: #26A69A;
         color: white;
-        font-size: 22px;  /* Larger button font */
+        font-size: 22px;
         padding: 16px 28px;
-        border-radius: 12px;  /* Rounded corners */
+        border-radius: 12px;
     }
     .stButton>button:hover {
-        background-color: #00897B; /* Darker cyan on hover */
+        background-color: #00897B;
     }
     .stTitle {
-        font-size: 40px;  /* Larger title font */
+        font-size: 40px;
         color: #00695C;
         text-align: center;
     }
     .stSubheader {
         color: #00796B;
-        font-size: 28px;  /* Larger subheader font */
+        font-size: 28px;
         font-weight: 600;
         margin-top: 25px;
     }
@@ -72,11 +71,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title and description
+# 标题和描述
 st.markdown('<h1 class="stTitle">👴 银巢 - 智慧伴老平台</h1>', unsafe_allow_html=True)
 st.markdown('<p class="stCaption">您的智能伴侣，随时为您提供温暖陪伴与实用帮助</p>', unsafe_allow_html=True)
 
-# Sidebar configuration
+# 侧边栏配置
 with st.sidebar:
     st.markdown("### 👴 银巢")
     st.markdown("欢迎体验银巢，我们为您带来贴心服务！")
@@ -89,40 +88,52 @@ with st.sidebar:
     st.markdown("📧 [yinchao@cufe.edu.cn](mailto:yinchao@cufe.edu.cn)")
     st.markdown("🌐 [银巢官网](https://yinchao.x.ai)")
 
-# Weather API function
+# 天气 API 函数
 @st.cache_data
 def get_weather(city="Beijing"):
-    api_key = "your_openweather_api_key"  # Replace with your OpenWeather API key
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
-    response = requests.get(url)
-    data = response.json()
-    if data["cod"] == 200:
-        weather = data["weather"][0]["description"]
-        temp = data["main"]["temp"]
-        return f"{city} 今天天气: {weather}, 温度: {temp}°C"
-    return "暂无法获取天气信息"
+    try:
+        api_key = st.secrets["OPENWEATHER_API_KEY"]
+        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        if data["cod"] == 200:
+            weather = data["weather"][0]["description"]
+            temp = data["main"]["temp"]
+            return f"{city} 今天天气: {weather}, 温度: {temp}°C"
+        return "暂无法获取天气信息"
+    except requests.RequestException:
+        return "暂无法获取天气信息"
 
-# Joke API function
+# 笑话 API 函数
 @st.cache_data
 def get_joke():
-    url = "https://official-joke-api.appspot.com/random_joke"
-    response = requests.get(url)
-    data = response.json()
-    return f"{data['setup']} - {data['punchline']}"
+    try:
+        url = "https://official-joke-api.appspot.com/random_joke"
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        return f"{data['setup']} - {data['punchline']}"
+    except requests.RequestException:
+        return "暂无法获取笑话"
 
-# News API function
+# 新闻 API 函数
 @st.cache_data
 def get_news():
-    api_key = "your_news_api_key"  # Replace with your News API key
-    url = f"https://newsapi.org/v2/top-headlines?country=cn&apiKey={api_key}"
-    response = requests.get(url)
-    data = response.json()
-    if data["status"] == "ok":
-        headlines = [article["title"] for article in data["articles"][:3]]
-        return "\n".join(headlines)
-    return "暂无法获取新闻信息"
+    try:
+        api_key = st.secrets["NEWS_API_KEY"]
+        url = f"https://newsapi.org/v2/top-headlines?country=cn&apiKey={api_key}"
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        if data["status"] == "ok":
+            headlines = [article["title"] for article in data["articles"][:3]]
+            return "\n".join(headlines)
+        return "暂无法获取新闻信息"
+    except requests.RequestException:
+        return "暂无法获取新闻信息"
 
-# Load model function
+# 加载模型函数
 @st.cache_resource
 def load_model():
     try:
@@ -143,31 +154,41 @@ def load_model():
         st.error(f"模型加载失败: {str(e)}")
         st.stop()
 
-# Load model
+# 加载模型
 with st.spinner("正在加载模型..."):
     model, tokenizer = load_model()
 
-# Create pipeline
+# 创建 pipeline
 try:
     text_generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
 except Exception as e:
     st.error(f"Pipeline创建失败: {str(e)}")
     st.stop()
 
-# Speech to text using sounddevice
-def record_audio(duration=5, fs=16000):
-    st.write("录音中...")
-    audio_data = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='float32')
-    sd.wait()
-    st.write("录音完成。")
-    return audio_data
+# 上传音频文件
+def upload_audio():
+    uploaded_file = st.file_uploader("上传音频文件", type=["wav", "mp3"])
+    if uploaded_file is not None:
+        return uploaded_file
+    return None
 
-def audio_to_text(audio_data, fs=16000):
-    # 将录音数据转换为文本 (在实际应用中需要语音识别API)
-    # 这里简单模拟返回文本
-    return "我想查询天气"
+# 语音转文本函数（使用 Google Cloud Speech-to-Text）
+def audio_to_text(audio_file):
+    try:
+        client = speech.SpeechClient()
+        audio = speech.RecognitionAudio(content=audio_file.read())
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=16000,
+            language_code="zh-CN",
+        )
+        response = client.recognize(config=config, audio=audio)
+        for result in response.results:
+            return result.alternatives[0].transcript
+    except Exception as e:
+        return f"语音识别错误: {e}"
 
-# Chat interface
+# 聊天界面
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -202,14 +223,36 @@ if prompt := st.chat_input("有什么可以帮助您的？"):
         st.write(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
-# Using speech recognition with sounddevice (simple demo)
-if st.button("语音输入"):
-    audio_data = record_audio()
-    text = audio_to_text(audio_data)
-    st.write(f"识别结果: {text}")
-    st.chat_input(text)  # Pass recognized text as input
+# 语音输入
+if st.button("上传音频文件"):
+    audio_file = upload_audio()
+    if audio_file:
+        text = audio_to_text(audio_file)
+        st.write(f"识别结果: {text}")
+        st.session_state.messages.append({"role": "user", "content": text})
+        st.chat_message("user").write(text)
+        # 自动将识别结果作为输入处理
+        system_prompt = "system\n你是银巢，一个基于 Qwen2-1.5B 微调的智慧伴老助手，专为老年人提供陪伴聊天、情感关怀和智能助手服务。你由中央财经大学银巢团队开发，旨在模拟虚拟子女或伴侣的角色，用温馨、亲切的语气与用户交流，并支持阿尔兹海默症预防和监测功能。\n"
+        full_prompt = system_prompt + f"user\n{text}\nassistant\n"
+        with st.chat_message("assistant"):
+            with st.spinner("正在生成回答..."):
+                inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
+                generate_kwargs = {
+                    "inputs": inputs.input_ids,
+                    "max_new_tokens": 256,
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "do_sample": True,
+                    "pad_token_id": tokenizer.eos_token_id,
+                    "repetition_penalty": 1.1
+                }
+                outputs = model.generate(**generate_kwargs)
+                response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                answer = response.split("assistant\n")[-1].strip() if "assistant\n" in response else response.strip()
+            st.write(answer)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
 
-# Dynamic features section
+# 动态功能区域
 st.markdown('<h2 class="stSubheader">每日动态</h2>', unsafe_allow_html=True)
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -223,18 +266,15 @@ with col3:
     st.write("📰 **今日新闻**")
     st.write(get_news())
 
-# Health monitoring with data collection and visualization
+# 健康监测
 st.markdown('<h2 class="stSubheader">健康监测</h2>', unsafe_allow_html=True)
 with st.expander("记录您的健康数据"):
     bp_systolic = st.number_input("收缩压 (mmHg)", min_value=0, max_value=300, value=120)
     bp_diastolic = st.number_input("舒张压 (mmHg)", min_value=0, max_value=200, value=80)
     heart_rate = st.number_input("心率 (次/分钟)", min_value=0, max_value=200, value=70)
     if st.button("保存健康数据"):
-        # Initialize health data storage
         if "health_data" not in st.session_state:
             st.session_state.health_data = []
-        
-        # Store new data with timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         st.session_state.health_data.append({
             "timestamp": timestamp,
@@ -242,8 +282,6 @@ with st.expander("记录您的健康数据"):
             "bp_diastolic": bp_diastolic,
             "heart_rate": heart_rate
         })
-        
-        # Health feedback
         if bp_systolic > 140 or bp_diastolic > 90:
             st.warning("您的血压偏高，建议关注饮食和适量运动，或咨询医生。")
         elif heart_rate > 100 or heart_rate < 60:
@@ -251,24 +289,17 @@ with st.expander("记录您的健康数据"):
         else:
             st.success("您的健康数据正常，继续保持！")
 
-# Plot health data
+# 绘制健康数据趋势
 if "health_data" in st.session_state and st.session_state.health_data:
     st.markdown("### 健康数据趋势")
-    # Convert health data to DataFrame
     df = pd.DataFrame(st.session_state.health_data)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
-    
-    # Set Chinese font for Matplotlib
     plt.rcParams['font.family'] = 'Noto Sans CJK SC'
     plt.rcParams['axes.unicode_minus'] = False
-
-    # Create line plot
     plt.figure(figsize=(10, 6))
     plt.plot(df["timestamp"], df["bp_systolic"], label="收缩压 (mmHg)", color="red", marker="o")
     plt.plot(df["timestamp"], df["bp_diastolic"], label="舒张压 (mmHg)", color="blue", marker="o")
     plt.plot(df["timestamp"], df["heart_rate"], label="心率 (次/分钟)", color="green", marker="o")
-    
-    # Customize plot for elderly users
     plt.title("健康数据趋势", fontsize=20, pad=15)
     plt.xlabel("时间", fontsize=16)
     plt.ylabel("数值", fontsize=16)
@@ -277,19 +308,13 @@ if "health_data" in st.session_state and st.session_state.health_data:
     plt.xticks(rotation=45, fontsize=12)
     plt.yticks(fontsize=12)
     plt.tight_layout()
-    
-    # Save to buffer
     buffer = io.BytesIO()
     plt.savefig(buffer, format="png")
     buffer.seek(0)
-    
-    # Display the plot
     st.image(buffer, use_column_width=True)
-    
-    # Close the plot to free memory
     plt.close()
 
-# Task manager with completion
+# 任务管理
 st.markdown('<h2 class="stSubheader">今日任务</h2>', unsafe_allow_html=True)
 task = st.text_input("添加新任务")
 if st.button("添加任务"):
@@ -307,22 +332,25 @@ if "tasks" in st.session_state:
                 task["completed"] = True
                 st.experimental_rerun()
 
-# Family photos
+# 家庭相册
 st.markdown('<h2 class="stSubheader">家庭相册</h2>', unsafe_allow_html=True)
 uploaded_file = st.file_uploader("上传家庭照片", type=["jpg", "png", "jpeg"])
 if uploaded_file:
     st.image(uploaded_file, caption="家庭照片", use_container_width=True)
 
-# Reminder settings
+# 提醒设置
 st.sidebar.markdown("### 提醒设置")
 reminder_time = st.sidebar.time_input("设置提醒时间")
 reminder_message = st.sidebar.text_input("提醒内容", "该喝水了！")
 if st.sidebar.button("设置提醒"):
     formatted_time = reminder_time.strftime("%H:%M")
-    schedule.every().day.at(formatted_time).do(send_reminder, reminder_message)
+    schedule.every().day.at(formatted_time).do(lambda: st.session_state.update({
+        "reminder_triggered": True,
+        "reminder_message": reminder_message
+    }))
     st.sidebar.success(f"将在 {formatted_time} 提醒您：{reminder_message}")
 
-# Display reminder when triggered
-if st.session_state.reminder_triggered:
+# 显示提醒
+if "reminder_triggered" in st.session_state and st.session_state.reminder_triggered:
     st.sidebar.success(st.session_state.reminder_message)
-    st.session_state.reminder_triggered = False  # Reset after display
+    st.session_state.reminder_triggered = False
