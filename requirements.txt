@@ -13,4 +13,5 @@ torch
 schedule
 matplotlib
 pandas
+portaudio
 sounddevice
